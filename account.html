@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sido — حسابي</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/navbar.css">
+<style>
+body{background:#0a0816;color:#f0eeff;margin:0;font-family:'Tajawal',sans-serif}
+.acc-top{background:linear-gradient(135deg,#13102a,#1e1640);padding:40px 4%;border-bottom:1px solid rgba(255,204,0,.12)}
+.acc-profile{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.acc-av{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#c026d3);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;border:3px solid rgba(255,204,0,.35);flex-shrink:0}
+.acc-info h2{font-size:22px;font-weight:800;color:#ffcc00;margin-bottom:4px}
+.acc-info p{color:#887aaa;font-size:13px}
+.logout-btn{margin-right:auto;padding:9px 20px;background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.28);border-radius:20px;cursor:pointer;font-family:'Tajawal',sans-serif;font-weight:700;font-size:13px;display:flex;align-items:center;gap:7px;transition:.18s}
+.logout-btn:hover{background:rgba(239,68,68,.2)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:24px 4%}
+.stat{background:#1a1535;border:1px solid rgba(124,58,237,.22);border-radius:13px;padding:18px;text-align:center;cursor:pointer;transition:.22s}
+.stat:hover{border-color:#ffcc00;transform:translateY(-3px)}
+.stat i{font-size:26px;color:#ffcc00;display:block;margin-bottom:7px}
+.stat h3{font-size:22px;font-weight:800;margin-bottom:3px}
+.stat p{font-size:12px;color:#887aaa}
+.body{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:0 4% 60px}
+.panel{background:#1a1535;border:1px solid rgba(124,58,237,.22);border-radius:16px;padding:22px}
+.panel h3{display:flex;align-items:center;gap:8px;font-size:15px;color:#ffcc00;margin-bottom:18px}
+.field{margin-bottom:15px}
+.field label{display:block;font-size:12px;color:#887aaa;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.field input{width:100%;padding:11px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(124,58,237,.28);border-radius:10px;color:#f0eeff;font-size:14px;font-family:'Tajawal',sans-serif;outline:none;transition:.18s;box-sizing:border-box}
+.field input:focus{border-color:#ffcc00;background:rgba(255,204,0,.04)}
+.save-btn{padding:10px 22px;background:linear-gradient(90deg,#ffcc00,#ff9900);color:#000;font-weight:700;font-size:14px;font-family:'Tajawal',sans-serif;border:none;border-radius:20px;cursor:pointer;transition:.18s;clip-path:polygon(0 0,93% 0,100% 50%,93% 100%,0 100%)}
+.save-btn:hover{transform:scale(1.04)}
+.log-item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(124,58,237,.13)}
+.log-item:last-child{border:none}
+.log-label{font-size:13px;color:#ddd}
+.log-date{font-size:11px;color:#554466;margin-top:2px}
+.pos{color:#6ee7b7;font-weight:700}.neg{color:#fca5a5;font-weight:700}
+.ref-box{background:rgba(255,204,0,.06);border:1px solid rgba(255,204,0,.2);border-radius:11px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.ref-code{font-weight:900;font-size:18px;color:#ffcc00;letter-spacing:3px}
+.copy-btn{padding:7px 14px;background:rgba(255,204,0,.12);color:#ffcc00;border:1px solid rgba(255,204,0,.28);border-radius:18px;cursor:pointer;font-family:'Tajawal',sans-serif;font-weight:700;font-size:12px;transition:.18s}
+.copy-btn:hover{background:rgba(255,204,0,.22)}
+.earn-row{display:flex;align-items:center;gap:12px;font-size:14px;margin-bottom:13px}
+.earn-icon{font-size:20px;flex-shrink:0}
+.earn-row strong{display:block;font-size:13px;margin-bottom:2px}
+.earn-row span{font-size:12px;color:#887aaa}
+@media(max-width:768px){.stats{grid-template-columns:repeat(2,1fr)}.body{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="acc-top">
+  <div class="acc-profile">
+    <div class="acc-av" id="accAv">؟</div>
+    <div class="acc-info">
+      <h2 id="accName">جاري التحميل...</h2>
+      <p id="accEmail">—</p>
+      <p id="accJoined" style="font-size:12px;color:#443355;margin-top:3px"></p>
+    </div>
+    <button class="logout-btn" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> خروج</button>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><i class="fas fa-star"></i><h3 id="totalPts">0</h3><p>نقطة</p></div>
+  <div class="stat"><i class="fas fa-eye"></i><h3 id="watchCnt">0</h3><p>حلقة شاهدها</p></div>
+  <div class="stat"><i class="fas fa-bookmark"></i><h3 id="wlCnt">0</h3><p>في قائمتي</p></div>
+  <div class="stat" onclick="document.getElementById('sido-rewards-modal')?.classList.add('open')"><i class="fas fa-gift"></i><h3>🎁</h3><p>المكافآت</p></div>
+</div>
+
+<div class="body">
+  <div class="panel">
+    <h3><i class="fas fa-user-edit"></i> تعديل الحساب</h3>
+    <div class="field"><label>اسم المستخدم</label><input type="text" id="editName" placeholder="اسمك"></div>
+    <div class="field"><label>الإيميل</label><input type="email" id="editEmail" placeholder="إيميلك" readonly style="opacity:.5;cursor:not-allowed"></div>
+    <button class="save-btn" onclick="saveProfile()"><i class="fas fa-save"></i> حفظ</button>
+  </div>
+
+  <div class="panel">
+    <h3><i class="fas fa-history"></i> آخر النقاط</h3>
+    <div id="ptsLog"><p style="color:#554466;text-align:center;padding:20px">جاري التحميل...</p></div>
+  </div>
+
+  <div class="panel">
+    <h3><i class="fas fa-share-alt"></i> ادعُ أصدقاءك</h3>
+    <p style="color:#887aaa;font-size:14px;margin-bottom:14px">كل صديق تدعوه = <strong style="color:#ffcc00">+200 نقطة</strong> فور تسجيله</p>
+    <div class="ref-box">
+      <div>
+        <div style="font-size:11px;color:#887aaa;margin-bottom:3px">كودك الشخصي</div>
+        <div class="ref-code" id="refCode">SIDO-XXXX</div>
+      </div>
+      <button class="copy-btn" onclick="copyRef()"><i class="fas fa-copy"></i> نسخ الرابط</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3><i class="fas fa-info-circle"></i> كيف تكسب أكثر</h3>
+    <div class="earn-row"><span class="earn-icon">📺</span><div><strong>شاهد حلقة</strong><span>+10 نقاط لكل حلقة</span></div></div>
+    <div class="earn-row"><span class="earn-icon">📅</span><div><strong>دخول يومي</strong><span>+50 نقطة كل يوم</span></div></div>
+    <div class="earn-row"><span class="earn-icon">👥</span><div><strong>دعوة صديق</strong><span>+200 نقطة</span></div></div>
+    <div class="earn-row"><span class="earn-icon">⚡</span><div><strong>يوم الجمعة</strong><span>نقاط مضاعفة x2</span></div></div>
+    <div class="earn-row"><span class="earn-icon">🎁</span><div><strong>1000 نقطة</strong><span>= بطاقة مكافأة 1$</span></div></div>
+  </div>
+</div>
+
+<script type="module">
+import { supabase } from "../backend/supabase.js";
+import { getTotalPoints } from "../js/points.js";
+import "../js/navbar.js";
+
+const LABELS = {watch:"📺 مشاهدة",daily_login:"📅 دخول يومي",signup_bonus:"🎁 مكافأة انضمام",referral:"👥 إحالة",redeem:"🎁 استبدال"};
+
+async function init() {
+  const {data,error} = await supabase.auth.getUser();
+  if (error || !data?.user) { location.href="login.html"; return; }
+  const u = data.user;
+
+  const {data:prof} = await supabase.from("profiles").select("*").eq("id",u.id).single();
+  const name = prof?.username || u.email?.split("@")[0] || "مستخدم";
+
+  document.getElementById("accAv").textContent    = name[0].toUpperCase();
+  document.getElementById("accName").textContent  = name;
+  document.getElementById("accEmail").textContent = u.email;
+  document.getElementById("editName").value       = name;
+  document.getElementById("editEmail").value      = u.email;
+  document.getElementById("refCode").textContent  = "SIDO-" + u.id.slice(0,4).toUpperCase();
+  if (u.created_at) document.getElementById("accJoined").textContent = "عضو منذ: " + new Date(u.created_at).toLocaleDateString("ar");
+
+  const total = await getTotalPoints(u.id);
+  document.getElementById("totalPts").textContent = total;
+
+  const {data:logs} = await supabase.from("points_log").select("*").eq("user_id",u.id).order("created_at",{ascending:false}).limit(8);
+  document.getElementById("watchCnt").textContent = (logs||[]).filter(r=>r.type==="watch").length;
+  document.getElementById("ptsLog").innerHTML = (logs||[]).length
+    ? (logs||[]).map(r=>`<div class="log-item"><div><div class="log-label">${LABELS[r.type]||r.type}</div><div class="log-date">${new Date(r.created_at).toLocaleDateString("ar")}</div></div><span class="${r.amount>0?'pos':'neg'}">${r.amount>0?'+':''}${r.amount} ⭐</span></div>`).join("")
+    : "<p style='color:#554466;text-align:center;padding:20px'>لا توجد سجلات</p>";
+
+  const {count} = await supabase.from("watchlist").select("*",{count:"exact",head:true}).eq("user_id",u.id);
+  document.getElementById("wlCnt").textContent = count||0;
+
+  window.saveProfile = async()=>{
+    const nm = document.getElementById("editName").value.trim();
+    if(!nm){alert("أدخل اسماً");return;}
+    await supabase.from("profiles").upsert({id:u.id,username:nm});
+    alert("✅ تم الحفظ");
+  };
+  window.doLogout = async()=>{await supabase.auth.signOut();location.href="../index.html";};
+  window.copyRef = ()=>{
+    navigator.clipboard.writeText("https://sido.net/join?ref="+u.id.slice(0,4).toUpperCase())
+      .then(()=>alert("✅ تم نسخ الرابط!"));
+  };
+}
+init();
+</script>
+</body></html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sido — أنمي</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../css/anime.css">
+<link rel="stylesheet" href="../css/navbar.css">
+<style>
+/* قائمة الحلقات */
+.episodes-section { padding: 28px 4% 60px; }
+.eps-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:12px; }
+.eps-count-badge { font-size:13px; color:#887aaa; font-weight:400; margin-right:8px; background:rgba(124,58,237,.15); padding:3px 10px; border-radius:20px; }
+.eps-search-wrap { position:relative; display:flex; align-items:center; }
+.eps-search { padding:8px 36px 8px 14px; background:rgba(255,255,255,.05); border:1px solid rgba(255,204,0,.2); border-radius:20px; color:#f0eeff; font-size:13px; font-family:Tajawal,sans-serif; outline:none; width:200px; transition:.2s; direction:rtl; }
+.eps-search:focus { border-color:#ffcc00; width:240px; background:rgba(255,204,0,.04); }
+.eps-search::placeholder { color:#554466; }
+.eps-search-icon { position:absolute; left:12px; color:#ffcc00; font-size:13px; pointer-events:none; }
+.episodes-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; }
+.ep-item { background:#1a1535; border:1px solid rgba(124,58,237,.22); padding:14px; border-radius:10px; cursor:pointer; transition:.2s; display:flex; flex-direction:column; gap:4px; position:relative; }
+.ep-item:hover { border-color:#ffcc00; background:rgba(255,204,0,.07); transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,.3); }
+.ep-item::before { content:"\25B6"; position:absolute; top:10px; left:10px; font-size:10px; color:#ffcc00; opacity:0; transition:.2s; }
+.ep-item:hover::before { opacity:1; }
+.ep-num { font-size:13px; font-weight:700; }
+.ep-title { font-size:11px; color:#887aaa; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ep-quality { font-size:10px; background:rgba(255,204,0,.12); border:1px solid rgba(255,204,0,.2); color:#ffcc00; padding:1px 7px; border-radius:8px; font-weight:700; align-self:flex-start; margin-top:2px; }
+.eps-empty { display:none; text-align:center; padding:30px; color:#887aaa; font-size:14px; }
+.eps-empty i { font-size:30px; display:block; margin-bottom:10px; color:#221a40; }
+@media(max-width:768px){.eps-header{flex-direction:column;align-items:flex-start}.eps-search{width:100%}.eps-search:focus{width:100%}}
+</style>
+</head>
+<body>
+
+<div class="anime-header" id="animeHeader" style="opacity:0;transition:.4s">
+  <img id="anime-poster" src="" alt="" style="background:#1a1535">
+  <div class="anime-header-info">
+    <h1 id="anime-title"></h1>
+    <div id="anime-meta" class="anime-meta"></div>
+    <p id="anime-desc"></p>
+    <div class="anime-btns">
+      <button id="watch-btn" class="btn-primary" style="display:none">
+        <i class="fas fa-play"></i> مشاهدة الحلقة الأولى
+      </button>
+      <button id="wl-btn" class="btn-outline">
+        <i class="fas fa-bookmark"></i> أضف للقائمة
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="episodes-section">
+  <div class="eps-header">
+    <h2 class="sec-title-anime">
+      <i class="fas fa-list"></i> قائمة الحلقات
+      <span id="eps-count" class="eps-count-badge"></span>
+    </h2>
+    <div class="eps-search-wrap">
+      <input type="text" id="eps-search" class="eps-search"
+             placeholder="ابحث في الحلقات..."
+             oninput="filterEps(this.value)">
+      <i class="fas fa-search eps-search-icon"></i>
+    </div>
+  </div>
+  <div id="episodes-container" class="episodes-grid">
+    <div style="grid-column:1/-1;text-align:center;padding:40px;color:#887aaa">
+      <i class="fas fa-spinner fa-spin fa-2x"></i>
+    </div>
+  </div>
+  <div class="eps-empty" id="eps-empty">
+    <i class="fas fa-search"></i>
+    لا توجد نتائج
+  </div>
+</div>
+
+<script type="module">
+import { supabase }                  from "../backend/supabase.js";
+import { getAnimeById, getEpisodes } from "../backend/anime_api.js";
+import { addToWatchlist }            from "../backend/user_api.js";
+import "../js/navbar.js";
+
+function san(s){ const d=document.createElement("div"); d.textContent=String(s||""); return d.innerHTML; }
+
+const animeId = new URLSearchParams(location.search).get("id");
+let allEps = [];
+
+// فلتر البحث
+window.filterEps = function(q) {
+  const filtered = q.trim()
+    ? allEps.filter(ep => String(ep.number).includes(q) || (ep.title||"").toLowerCase().includes(q.toLowerCase()))
+    : allEps;
+  renderEps(filtered);
+  document.getElementById("eps-empty").style.display = filtered.length ? "none" : "block";
+};
+
+function renderEps(eps) {
+  const container = document.getElementById("episodes-container");
+  container.innerHTML = eps.length
+    ? eps.map(ep => `
+        <div class="ep-item" onclick="location.href='episode.html?ep=${Number(ep.id)}'">
+          <span class="ep-num">الحلقة ${san(ep.number)}</span>
+          ${ep.title   ? `<span class="ep-title">${san(ep.title)}</span>`     : ""}
+          ${ep.quality ? `<span class="ep-quality">${san(ep.quality)}</span>` : ""}
+        </div>`).join("")
+    : `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#887aaa">
+         <i class="fas fa-inbox fa-2x" style="display:block;margin-bottom:12px;color:#221a40"></i>
+         لا توجد حلقات مضافة بعد
+       </div>`;
+}
+
+async function load() {
+  if (!animeId) return;
+
+  const [anime, eps] = await Promise.all([getAnimeById(animeId), getEpisodes(animeId)]);
+  if (!anime) { document.getElementById("anime-title").textContent = "غير موجود"; return; }
+
+  document.title = "Sido — " + (anime.name || "");
+  document.getElementById("anime-title").textContent = anime.name || "";
+  document.getElementById("anime-poster").src        = anime.image || "";
+  document.getElementById("anime-poster").alt        = anime.name  || "";
+  document.getElementById("anime-desc").textContent  = anime.description || "";
+
+  document.getElementById("anime-meta").innerHTML = [
+    anime.genre  ? `<span><i class="fas fa-tag"></i> ${san(anime.genre)}</span>`      : "",
+    anime.year   ? `<span><i class="fas fa-calendar"></i> ${san(anime.year)}</span>`  : "",
+    anime.rating ? `<span><i class="fas fa-star"></i> ${san(anime.rating)}</span>`    : "",
+    anime.status ? `<span>${san(anime.status)}</span>`                                 : "",
+    eps.length   ? `<span><i class="fas fa-list"></i> ${eps.length} حلقة</span>`      : "",
+  ].filter(Boolean).join("");
+
+  if (eps.length) {
+    const watchBtn = document.getElementById("watch-btn");
+    watchBtn.style.display = "inline-flex";
+    watchBtn.onclick = () => location.href = `episode.html?ep=${eps[0].id}`;
+  }
+
+  document.getElementById("animeHeader").style.opacity = "1";
+
+  // عدد الحلقات
+  const countEl = document.getElementById("eps-count");
+  if (countEl) countEl.textContent = eps.length ? eps.length + " حلقة" : "";
+
+  // قائمة الحلقات
+  allEps = eps;
+  renderEps(eps);
+
+  // زر القائمة
+  document.getElementById("wl-btn").onclick = async () => {
+    const { data } = await supabase.auth.getUser();
+    if (!data?.user) { location.href = "login.html"; return; }
+    await addToWatchlist(data.user.id, Number(animeId));
+    const btn = document.getElementById("wl-btn");
+    btn.innerHTML = '<i class="fas fa-check"></i> أُضيف للقائمة';
+    btn.style.borderColor = "rgba(16,185,129,.5)";
+    btn.style.color = "#6ee7b7";
+  };
+}
+
+load();
+</script>
+</body>
+</html>

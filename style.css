@@ -1,0 +1,99 @@
+body.dark{
+  margin:0;
+  font-family:Arial;
+  background:#0d0b10;
+  color:white;
+}
+
+.player-header{
+  display:flex;
+  justify-content:space-between;
+  padding:15px;
+  background:#15121a;
+}
+
+.player-layout{
+  display:flex;
+  flex-wrap:wrap;
+  padding:15px;
+}
+
+.video-box{
+  flex:2;
+  position:relative;
+}
+
+video{
+  width:100%;
+  border-radius:10px;
+  background:black;
+}
+
+.quality-btn{
+  position:absolute;
+  bottom:15px;
+  right:15px;
+  background:#ff7b00;
+  padding:8px;
+  border-radius:50%;
+  cursor:pointer;
+}
+
+.quality-menu{
+  position:absolute;
+  bottom:60px;
+  right:15px;
+  display:none;
+  background:#1b1622;
+  border-radius:8px;
+}
+
+.quality-menu button{
+  display:block;
+  width:100%;
+  background:none;
+  color:white;
+  border:none;
+  padding:10px;
+  cursor:pointer;
+}
+
+.anime-info{
+  flex:1;
+  margin-left:15px;
+  background:#1b1622;
+  border-radius:10px;
+  padding:15px;
+}
+
+.anime-info img{
+  width:100%;
+  border-radius:10px;
+}
+
+.watchlist-btn{
+  width:100%;
+  margin-top:10px;
+  padding:10px;
+  background:#ff7b00;
+  border:none;
+  border-radius:10px;
+  color:white;
+}
+
+.episodes{
+  padding:15px;
+}
+
+.episode-list button{
+  background:#1b1622;
+  color:white;
+  border:none;
+  padding:10px;
+  margin:5px;
+  border-radius:8px;
+}
+
+.episode-list .active{
+  background:#ff7b00;
+}

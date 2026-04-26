@@ -1,0 +1,269 @@
+/* === SHARED NAVBAR === */
+.sido-navbar {
+  position: sticky; top: 0; z-index: 9000;
+  background: rgba(0,0,0,0.96);
+  backdrop-filter: blur(12px);
+  border-bottom: 2px solid #ffcc00;
+  padding: 0 4%;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px;
+  font-family: 'Tajawal', sans-serif;
+  direction: rtl;
+}
+
+.snav-logo { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+.snav-logo-icon {
+  width: 38px; height: 38px;
+  background: linear-gradient(135deg, #ffcc00, #ff9900);
+  border-radius: 9px; display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 18px; color: #000;
+  clip-path: polygon(0 0,88% 0,100% 12%,100% 100%,12% 100%,0 88%);
+}
+.snav-logo-text { font-weight: 900; font-size: 22px; color: #ffcc00; letter-spacing: 1px; }
+.snav-logo-text em { font-style: normal; color: #7c3aed; }
+
+.snav-links { display: flex; gap: 2px; list-style: none; align-items: center; }
+.snav-links a {
+  text-decoration: none; color: #888; font-size: 14px; font-weight: 600;
+  padding: 7px 12px; border-radius: 10px;
+  display: flex; align-items: center; gap: 5px; transition: .18s;
+}
+.snav-links a:hover, .snav-links a.active { color: #ffcc00; background: rgba(255,204,0,.1); }
+
+.snav-right { display: flex; align-items: center; gap: 10px; }
+
+.snav-points {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,204,0,.08); border: 1px solid rgba(255,204,0,.3);
+  padding: 6px 13px; border-radius: 22px;
+  font-size: 13px; font-weight: 700; color: #ffcc00;
+  cursor: pointer; transition: .18s;
+}
+.snav-points:hover { background: rgba(255,204,0,.16); }
+
+.snav-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed, #c026d3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; cursor: pointer; border: 2px solid rgba(124,58,237,.4);
+  text-decoration: none; color: #fff; transition: .18s;
+}
+.snav-avatar:hover { border-color: #ffcc00; transform: scale(1.08); }
+
+.snav-btn {
+  padding: 7px 16px;
+  background: linear-gradient(90deg,#ffcc00,#ff9900);
+  color: #000; font-weight: 700; font-size: 13px;
+  font-family: 'Tajawal', sans-serif;
+  border: none; border-radius: 20px; cursor: pointer;
+  text-decoration: none; transition: .18s;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.snav-btn:hover { transform: scale(1.04); }
+
+.snav-mobile { display: none; background: none; border: none; color: #ffcc00; font-size: 22px; cursor: pointer; }
+
+.snav-drawer {
+  display: none; position: fixed;
+  top: 64px; left: 0; right: 0;
+  background: #0a0816; border-bottom: 1px solid rgba(255,204,0,.2);
+  padding: 12px 4%; z-index: 8999; direction: rtl;
+}
+.snav-drawer.open { display: block; }
+.snav-drawer a {
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 0; color: #ccc; text-decoration: none;
+  font-size: 15px; border-bottom: 1px solid rgba(255,255,255,.05);
+}
+.snav-drawer a:last-child { border: none; }
+.snav-drawer a:hover { color: #ffcc00; }
+
+/* === REWARDS MODAL === */
+.rewards-bg {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.88); z-index: 99999;
+  justify-content: center; align-items: center;
+}
+.rewards-bg.open { display: flex; }
+.rewards-box {
+  background: #13102a; border: 2px solid #ffcc00;
+  border-radius: 22px; padding: 30px;
+  max-width: 460px; width: 92%; max-height: 86vh; overflow-y: auto;
+  font-family: 'Tajawal', sans-serif; direction: rtl; color: #f0eeff;
+}
+.rm-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.rm-head h2 { font-size: 20px; color: #ffcc00; display: flex; align-items: center; gap: 8px; }
+.rm-close { font-size: 24px; cursor: pointer; background: none; border: none; color: #888; }
+.rm-close:hover { color: #ffcc00; }
+.rm-balance { text-align: center; background: rgba(255,204,0,.07); border: 1px solid rgba(255,204,0,.25); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+.rm-balance p { color: #888; font-size: 13px; margin-bottom: 3px; }
+.rm-balance h3 { font-size: 32px; font-weight: 800; color: #ffcc00; }
+.rm-item {
+  display: flex; justify-content: space-between; align-items: center;
+  background: rgba(255,255,255,.03); border: 1px solid rgba(124,58,237,.25);
+  border-radius: 11px; padding: 13px 15px; margin-bottom: 9px; transition: .2s;
+}
+.rm-item:hover { border-color: rgba(255,204,0,.3); }
+.rm-item-info { display: flex; align-items: center; gap: 12px; }
+.rm-item-icon { font-size: 24px; }
+.rm-item-text h4 { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+.rm-item-text p { font-size: 12px; color: #888; }
+.rm-buy {
+  background: linear-gradient(90deg,#ffcc00,#ff9900); color: #000;
+  font-weight: 700; font-size: 12px; font-family: 'Tajawal',sans-serif;
+  border: none; border-radius: 18px; padding: 6px 13px; cursor: pointer;
+  white-space: nowrap; transition: .15s;
+}
+.rm-buy:hover { transform: scale(1.05); }
+.rm-hint {
+  margin-top: 16px; background: rgba(124,58,237,.1); border: 1px solid rgba(124,58,237,.25);
+  border-radius: 10px; padding: 12px; font-size: 13px; color: #888; line-height: 1.7;
+}
+.rm-hint strong { color: #f0eeff; }
+
+/* === SHARED FOOTER === */
+.sido-footer {
+  background: #0a0816; border-top: 2px solid #ffcc00;
+  padding: 44px 4% 24px; direction: rtl; font-family: 'Tajawal', sans-serif;
+}
+.sf-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; margin-bottom: 32px; }
+.sf-brand p { color: #888; font-size: 14px; line-height: 1.7; margin-top: 10px; max-width: 240px; }
+.sf-col h4 { color: #ffcc00; font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+.sf-col ul { list-style: none; }
+.sf-col ul li { margin-bottom: 8px; }
+.sf-col ul li a { color: #888; text-decoration: none; font-size: 14px; transition: .15s; }
+.sf-col ul li a:hover { color: #ffcc00; }
+.sf-bottom {
+  border-top: 1px solid rgba(255,255,255,.08); padding-top: 18px;
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  color: #555; font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .snav-links { display: none; }
+  .snav-mobile { display: block; }
+  .sf-grid { grid-template-columns: 1fr 1fr; }
+  .sf-brand { grid-column: span 2; }
+}
+@media (max-width: 480px) {
+  .sf-grid { grid-template-columns: 1fr; }
+  .sf-brand { grid-column: span 1; }
+}
+
+/* ===== LOGIN / REGISTER BUTTONS ===== */
+.snav-btn {
+  padding: 7px 15px;
+  background: linear-gradient(90deg,#ffcc00,#ff9900);
+  color: #000; font-weight: 700; font-size: 13px;
+  font-family: 'Tajawal', sans-serif;
+  border: none; border-radius: 20px; cursor: pointer;
+  text-decoration: none; transition: .18s;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.snav-btn:hover { transform: scale(1.04); box-shadow: 0 0 14px rgba(255,204,0,.4); }
+
+.snav-btn-outline {
+  padding: 6px 14px;
+  background: transparent;
+  color: #ffcc00; font-weight: 700; font-size: 13px;
+  font-family: 'Tajawal', sans-serif;
+  border: 1.5px solid rgba(255,204,0,.5); border-radius: 20px;
+  cursor: pointer; text-decoration: none; transition: .18s;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.snav-btn-outline:hover { background: rgba(255,204,0,.1); border-color: #ffcc00; }
+
+/* ===== SEARCH ===== */
+.snav-search-wrap {
+  position: relative;
+  display: flex; align-items: center;
+}
+.snav-search {
+  width: 200px; padding: 7px 34px 7px 12px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,204,0,.25);
+  border-radius: 22px; color: #f0eeff;
+  font-size: 13px; font-family: 'Tajawal', sans-serif;
+  outline: none; transition: .2s; direction: rtl;
+}
+.snav-search:focus { border-color: #ffcc00; background: rgba(255,204,0,.06); width: 240px; }
+.snav-search::placeholder { color: #555; }
+.snav-search-icon { position: absolute; left: 10px; font-size: 14px; pointer-events: none; }
+
+.snav-search-results {
+  display: none; position: absolute;
+  top: calc(100% + 8px); right: 0;
+  width: 300px; background: #13102a;
+  border: 1px solid rgba(255,204,0,.2);
+  border-radius: 14px; overflow: hidden;
+  z-index: 10000;
+  box-shadow: 0 12px 30px rgba(0,0,0,.5);
+}
+.snav-search-results.open { display: block; }
+
+.sr-item {
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px 14px; text-decoration: none;
+  color: #f0eeff; transition: .15s; border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.sr-item:last-child { border: none; }
+.sr-item:hover { background: rgba(255,204,0,.07); color: #ffcc00; }
+.sr-item img { width: 38px; height: 52px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+.sr-name { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+.sr-meta { font-size: 11px; color: #887aaa; }
+.sr-empty { padding: 16px; text-align: center; color: #887aaa; font-size: 13px; }
+
+/* تعديل الـ right للـ navbar */
+.snav-right { display: flex; align-items: center; gap: 8px; }
+
+@media (max-width: 900px) {
+  .snav-search-wrap { display: none; }
+}
+@media (max-width: 768px) {
+  .snav-btn-outline { display: none; }
+}
+
+/* ===== SIDO LOGO 3D - من صفحة تسجيل الدخول ===== */
+.snav-logo-3d {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.snav-logo-dragon {
+  font-size: 32px;
+  color: #ffcc00;
+  text-shadow: 0 0 20px #ffcc00, 0 0 40px #ff6600;
+  animation: dragonGlow 2s ease-in-out infinite;
+  display: block;
+  line-height: 1;
+}
+
+@keyframes dragonGlow {
+  0%, 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 10px #ffcc00); }
+  50%       { transform: scale(1.1) rotate(5deg); filter: drop-shadow(0 0 25px #ff6600); }
+}
+
+.snav-logo-text-3d {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.snav-logo-name {
+  font-family: 'Exo 2', 'Tajawal', sans-serif;
+  font-weight: 900;
+  font-size: 22px;
+  color: #ffcc00;
+  letter-spacing: 2px;
+  text-shadow: 2px 2px 8px #ff6600;
+}
+.snav-logo-name em { font-style: normal; color: #7c3aed; }
+
+.snav-logo-sub {
+  font-size: 10px;
+  color: #887aaa;
+  letter-spacing: 1px;
+}

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sido — إنشاء حساب</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../css/navbar.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Tajawal,sans-serif}
+body{background:linear-gradient(135deg,#0a0020 0%,#000b33 50%,#200010 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;direction:rtl;overflow-x:hidden;position:relative}
+
+/* خلفية نجوم */
+.stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+.star{position:absolute;background:#fff;border-radius:50%;animation:twinkle 3s infinite}
+@keyframes twinkle{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
+
+/* بطاقة التسجيل */
+.reg-wrap{position:relative;z-index:2;width:100%;max-width:480px;padding:20px}
+.reg-card{
+  background:linear-gradient(135deg,rgba(10,5,30,.97),rgba(20,10,50,.95));
+  border:2px solid rgba(99,102,241,.4);
+  border-radius:28px;padding:40px 36px;
+  box-shadow:0 0 80px rgba(99,102,241,.2),0 0 40px rgba(139,92,246,.1);
+  transition:transform .1s ease-out;
+  transform-style:preserve-3d;
+}
+
+/* شعار */
+.reg-logo{text-align:center;margin-bottom:28px}
+.reg-logo .dragon{font-size:52px;animation:dragonFloat 3s ease-in-out infinite;display:block;margin-bottom:10px;filter:drop-shadow(0 0 16px #a855f7)}
+@keyframes dragonFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}}
+.reg-logo h1{font-size:28px;font-weight:900;background:linear-gradient(135deg,#a855f7,#6366f1,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px}
+.reg-logo p{color:#6b7280;font-size:13px;margin-top:6px}
+
+/* حقول */
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;color:#9ca3af;margin-bottom:7px;font-weight:600;letter-spacing:.04em}
+.input-wrap{position:relative;display:flex;align-items:center}
+.input-wrap i{position:absolute;right:14px;color:#6366f1;font-size:14px;z-index:1}
+.input-wrap input{
+  width:100%;padding:12px 40px 12px 14px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(99,102,241,.3);
+  border-radius:12px;color:#f0eeff;
+  font-size:14px;font-family:Tajawal,sans-serif;
+  outline:none;transition:.2s;
+}
+.input-wrap input:focus{border-color:#8b5cf6;background:rgba(139,92,246,.06);box-shadow:0 0 0 3px rgba(139,92,246,.1)}
+.input-wrap input::placeholder{color:#374151}
+
+/* قوة كلمة المرور */
+.strength-wrap{margin-top:6px}
+.strength-bar-bg{height:4px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+.strength-bar{height:100%;width:0;border-radius:4px;transition:.3s}
+.strength-txt{font-size:11px;margin-top:4px;color:#6b7280}
+
+/* checkbox */
+.check-label{display:flex;align-items:center;gap:8px;font-size:13px;color:#9ca3af;cursor:pointer}
+.check-label input{width:16px;height:16px;accent-color:#8b5cf6;cursor:pointer}
+.check-label a{color:#8b5cf6;text-decoration:none}
+.check-label a:hover{text-decoration:underline}
+
+/* زر */
+.reg-btn{
+  width:100%;padding:14px;margin-top:8px;
+  background:linear-gradient(135deg,#7c3aed,#4f46e5);
+  color:#fff;font-weight:800;font-size:15px;
+  font-family:Tajawal,sans-serif;
+  border:none;border-radius:14px;cursor:pointer;
+  transition:.2s;
+  box-shadow:0 6px 20px rgba(124,58,237,.4);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.reg-btn:hover{transform:scale(1.02);box-shadow:0 8px 28px rgba(124,58,237,.5)}
+.reg-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+/* رابط الدخول */
+.login-link{text-align:center;margin-top:20px;font-size:14px;color:#6b7280}
+.login-link a{color:#8b5cf6;font-weight:700;text-decoration:none}
+.login-link a:hover{color:#a78bfa}
+
+/* تنبيه */
+.alert-box{display:none;padding:11px 15px;border-radius:10px;margin-bottom:16px;font-size:13px;font-weight:600;text-align:center;animation:fadeA .3s ease}
+.alert-box.show{display:block}
+.alert-box.success{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#6ee7b7}
+.alert-box.error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+@keyframes fadeA{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:480px){.reg-card{padding:30px 22px}}
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="reg-wrap">
+  <div class="reg-card" id="regCard">
+
+    <div class="reg-logo">
+      <span class="dragon">🐉</span>
+      <h1>SIDO</h1>
+      <p>أنشئ حسابك وابدأ رحلتك</p>
+    </div>
+
+    <div class="alert-box" id="regAlert"></div>
+
+    <div class="field">
+      <label>👤 الاسم الكامل</label>
+      <div class="input-wrap"><i class="fas fa-user"></i><input type="text" id="reg-name" placeholder="أدخل اسمك"></div>
+    </div>
+
+    <div class="field">
+      <label>📧 البريد الإلكتروني</label>
+      <div class="input-wrap"><i class="fas fa-envelope"></i><input type="email" id="reg-email" placeholder="example@email.com" autocomplete="email"></div>
+    </div>
+
+    <div class="field">
+      <label>🔒 كلمة المرور</label>
+      <div class="input-wrap"><i class="fas fa-lock"></i><input type="password" id="reg-pass" placeholder="6 أحرف على الأقل" autocomplete="new-password" oninput="checkStrength(this.value)"></div>
+      <div class="strength-wrap">
+        <div class="strength-bar-bg"><div class="strength-bar" id="sBar"></div></div>
+        <div class="strength-txt" id="sTxt"></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>🔒 تأكيد كلمة المرور</label>
+      <div class="input-wrap"><i class="fas fa-lock"></i><input type="password" id="reg-confirm" placeholder="أعد كتابة كلمة المرور" autocomplete="new-password"></div>
+    </div>
+
+    <div class="field">
+      <label class="check-label">
+        <input type="checkbox" id="reg-terms">
+        <span>أوافق على <a href="#">الشروط والأحكام</a></span>
+      </label>
+    </div>
+
+    <button class="reg-btn" id="regBtn" onclick="doRegister()">
+      <i class="fas fa-user-plus"></i> إنشاء الحساب
+    </button>
+
+    <div class="login-link">
+      لديك حساب بالفعل؟ <a href="login.html">🔑 سجل الدخول</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// نجوم خلفية
+(function(){
+  const c=document.getElementById("stars");
+  for(let i=0;i<80;i++){
+    const s=document.createElement("div");
+    s.className="star";
+    const sz=Math.random()*2+1;
+    s.style.cssText="width:"+sz+"px;height:"+sz+"px;top:"+Math.random()*100+"%;left:"+Math.random()*100+"%;animation-delay:"+Math.random()*3+"s;animation-duration:"+(Math.random()*3+2)+"s";
+    c.appendChild(s);
+  }
+})();
+
+// 3D
+const card=document.getElementById("regCard");
+document.body.addEventListener("mousemove",(e)=>{
+  const r=card.getBoundingClientRect();
+  const rx=(e.clientY-r.top-r.height/2)/22,ry=(r.left+r.width/2-e.clientX)/22;
+  card.style.transform="perspective(1000px) rotateX("+rx+"deg) rotateY("+ry+"deg)";
+});
+document.body.addEventListener("mouseleave",()=>card.style.transform="perspective(1000px) rotateX(0) rotateY(0)");
+
+function showAlert(msg,type){
+  const a=document.getElementById("regAlert");
+  a.textContent=msg;a.className="alert-box "+type+" show";
+  setTimeout(()=>a.classList.remove("show"),5000);
+}
+
+window.checkStrength=function(p){
+  const bar=document.getElementById("sBar"),txt=document.getElementById("sTxt");
+  let s=0;
+  if(p.length>=6)s++;if(/[A-Z]/.test(p))s++;if(/[0-9]/.test(p))s++;if(/[^a-zA-Z0-9]/.test(p))s++;
+  const cl=[["",""],["ضعيفة","#ef4444"],["متوسطة","#f59e0b"],["جيدة","#10b981"],["قوية 💪","#6366f1"]];
+  bar.style.width=(s*25)+"%";bar.style.background=cl[s][1]||"";
+  txt.textContent=cl[s][0];txt.style.color=cl[s][1]||"";
+};
+</script>
+
+<script type="module">
+import { supabase } from "../backend/supabase.js";
+import "../js/navbar.js";
+
+window.doRegister = async function(){
+  const name    = document.getElementById("reg-name").value.trim();
+  const email   = document.getElementById("reg-email").value.trim();
+  const pass    = document.getElementById("reg-pass").value.trim();
+  const confirm = document.getElementById("reg-confirm").value.trim();
+  const terms   = document.getElementById("reg-terms").checked;
+
+  if(!name||!email||!pass){showAlert("👤 أدخل جميع البيانات","error");return;}
+  if(pass!==confirm){showAlert("🔒 كلمات المرور غير متطابقة","error");return;}
+  if(pass.length<6){showAlert("🔒 كلمة المرور 6 أحرف على الأقل","error");return;}
+  if(!terms){showAlert("✅ يجب الموافقة على الشروط","error");return;}
+
+  const btn=document.getElementById("regBtn");
+  btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> جاري الإنشاء...';btn.disabled=true;
+
+  const{data,error}=await supabase.auth.signUp({email,password:pass});
+  btn.innerHTML='<i class="fas fa-user-plus"></i> إنشاء الحساب';btn.disabled=false;
+
+  if(error){
+    const msg=error.message.includes("already")?"📧 الإيميل مسجل مسبقاً"
+             :error.message.includes("Password")?"🔒 كلمة المرور ضعيفة جداً"
+             :"❌ "+error.message;
+    showAlert(msg,"error");return;
+  }
+
+  if(data?.user){
+    await supabase.from("profiles").insert({id:data.user.id,username:name,points:0}).catch(()=>{});
+    await supabase.from("points_log").insert({user_id:data.user.id,amount:100,type:"signup_bonus"}).catch(()=>{});
+  }
+
+  btn.innerHTML='<i class="fas fa-check"></i> تم!';
+  btn.style.background="linear-gradient(135deg,#10b981,#059669)";
+  showAlert("🎉 أهلاً "+name+"! تحقق من إيميلك للتفعيل.","success");
+  setTimeout(()=>location.href="login.html",2500);
+};
+</script>
+</body></html>

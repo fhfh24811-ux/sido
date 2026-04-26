@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sido — مشاهدة</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../css/watch.css">
+<link rel="stylesheet" href="../css/navbar.css">
+<style>
+/* ===== SIDO PLAYER - يخفي كل شيء من السيرفر ===== */
+.sido-player-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255,204,0,.15);
+  box-shadow: 0 8px 32px rgba(0,0,0,.6);
+  user-select: none;
+}
+
+/* iframe مخفي تماماً خلف كل شيء */
+.sido-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  z-index: 1;
+  pointer-events: none; /* لا تفاعل مع iframe */
+}
+
+/* طبقة شفافة تمنع الضغط على iframe */
+.sido-blocker {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* overlay التحميل */
+.sido-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  transition: opacity .5s;
+}
+.sido-loading.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+.sido-spinner {
+  width: 54px; height: 54px;
+  border: 4px solid rgba(255,204,0,.15);
+  border-top-color: #ffcc00;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.sido-loading p { color: #887aaa; font-size: 13px; font-family: Tajawal,sans-serif; }
+
+/* زر Play وسط الشاشة */
+.sido-play-btn {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.45);
+  cursor: pointer;
+  transition: opacity .25s;
+}
+.sido-play-btn.hide { opacity: 0; pointer-events: none; }
+.sido-play-circle {
+  width: 72px; height: 72px;
+  background: rgba(255,204,0,.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: #000;
+  box-shadow: 0 0 40px rgba(255,204,0,.5);
+  transition: transform .2s;
+}
+.sido-play-btn:hover .sido-play-circle { transform: scale(1.1); }
+
+/* شريط التحكم السفلي */
+.sido-controls {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  z-index: 9;
+  background: linear-gradient(to top, rgba(0,0,0,.9) 0%, transparent 100%);
+  padding: 32px 14px 10px;
+  opacity: 0;
+  transition: opacity .3s;
+  pointer-events: none;
+}
+.sido-player-wrap:hover .sido-controls,
+.sido-controls.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* شريط التقدم */
+.sido-prog-wrap {
+  padding: 5px 0;
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+.sido-prog {
+  height: 4px;
+  background: rgba(255,255,255,.2);
+  border-radius: 4px;
+  position: relative;
+  transition: height .15s;
+}
+.sido-prog-wrap:hover .sido-prog { height: 6px; }
+.sido-prog-fill {
+  position: absolute;
+  top:0; left:0; height:100%;
+  background: #ffcc00;
+  border-radius: 4px;
+  pointer-events: none;
+  width: 0%;
+  transition: width .5s linear;
+}
+.sido-prog-thumb {
+  position: absolute;
+  top: 50%;
+  width: 14px; height: 14px;
+  background: #ffcc00;
+  border-radius: 50%;
+  transform: translate(-50%,-50%) scale(0);
+  transition: transform .15s;
+  pointer-events: none;
+  left: 0%;
+}
+.sido-prog-wrap:hover .sido-prog-thumb { transform: translate(-50%,-50%) scale(1); }
+
+/* أزرار التحكم */
+.sido-btns {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sido-left { display: flex; align-items: center; gap: 4px; flex: 1; }
+.sido-right { display: flex; align-items: center; gap: 4px; }
+
+.sc-btn {
+  width: 34px; height: 34px;
+  background: none; border: none;
+  color: #fff; font-size: 15px;
+  cursor: pointer; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  transition: .15s; flex-shrink: 0;
+}
+.sc-btn:hover { background: rgba(255,255,255,.12); color: #ffcc00; }
+
+/* وقت */
+.sc-time {
+  font-size: 12px; color: #ddd;
+  white-space: nowrap; margin: 0 6px;
+  font-family: monospace;
+}
+
+/* صوت */
+.sc-vol-wrap {
+  display: flex; align-items: center; gap: 4px;
+}
+.sc-vol-slider {
+  -webkit-appearance: none; appearance: none;
+  width: 0; height: 3px;
+  background: rgba(255,255,255,.2);
+  border-radius: 3px; outline: none;
+  cursor: pointer;
+  transition: width .2s;
+  overflow: hidden;
+}
+.sc-vol-wrap:hover .sc-vol-slider { width: 65px; }
+.sc-vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: #ffcc00; cursor: pointer;
+}
+
+/* سرعة */
+.sc-speed-wrap { position: relative; }
+.sc-speed-label {
+  font-size: 11px; font-weight: 700; color: #ffcc00;
+  background: rgba(255,204,0,.15);
+  border: 1px solid rgba(255,204,0,.3);
+  border-radius: 10px;
+  padding: 3px 8px; cursor: pointer;
+  white-space: nowrap;
+}
+.sc-speed-menu {
+  position: absolute; bottom: 38px; left: 50%;
+  transform: translateX(-50%);
+  background: #0f0c1e;
+  border: 1px solid rgba(255,204,0,.2);
+  border-radius: 10px; overflow: hidden;
+  display: none; min-width: 80px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.5);
+  z-index: 100;
+}
+.sc-speed-menu.open { display: block; }
+.sc-speed-menu div {
+  padding: 9px 14px; font-size: 12px;
+  color: #ccc; cursor: pointer;
+  text-align: center;
+  font-family: Tajawal, sans-serif;
+  transition: .15s;
+}
+.sc-speed-menu div:hover { background: rgba(255,204,0,.1); color: #ffcc00; }
+.sc-speed-menu div.ac { color: #ffcc00; font-weight: 700; }
+
+/* ===== SERVERS BAR ===== */
+.servers-bar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:#0e0b20;border-bottom:1px solid rgba(255,204,0,.1);flex-wrap:wrap}
+.srv-lbl{font-size:13px;color:#887aaa;font-weight:600;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.server-btn{padding:6px 14px;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.3);color:#b8a8dd;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;transition:.18s;font-family:Tajawal,sans-serif;display:flex;align-items:center;gap:5px}
+.server-btn:hover{border-color:#ffcc00;color:#ffcc00}
+.server-btn.active{background:linear-gradient(90deg,#ffcc00,#ff9900);color:#000;border-color:transparent;box-shadow:0 3px 10px rgba(255,204,0,.3)}
+.qtag{font-size:10px;font-weight:700;background:rgba(0,0,0,.25);padding:1px 5px;border-radius:5px}
+.server-btn.active .qtag{color:#000;background:rgba(0,0,0,.2)}
+.qwrap{display:none;align-items:center;gap:7px;margin-right:auto}
+.qwrap label{font-size:12px;color:#887aaa}
+.qsel{background:rgba(255,255,255,.05);border:1px solid rgba(255,204,0,.25);color:#f0eeff;border-radius:8px;padding:5px 10px;font-size:12px;font-family:Tajawal,sans-serif;cursor:pointer;outline:none}
+</style>
+</head>
+<body>
+
+<div class="watch-topbar">
+  <a href="#" id="back-link" class="back-link"><i class="fas fa-arrow-right"></i> <span id="anime-title">...</span></a>
+  <div class="watch-ep-label" id="ep-label"></div>
+  <div class="watch-pts" id="pts-badge" style="display:none">⭐ <span id="watch-pts">0</span> نقطة</div>
+</div>
+
+<div class="servers-bar">
+  <span class="srv-lbl"><i class="fas fa-server"></i> السيرفر:</span>
+  <div id="server-btns" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <span style="color:#554466;font-size:12px"><i class="fas fa-spinner fa-spin"></i> جاري...</span>
+  </div>
+  <div class="qwrap" id="qwrap">
+    <label><i class="fas fa-film"></i> الجودة:</label>
+    <select class="qsel" id="qsel"></select>
+  </div>
+</div>
+
+<div class="watch-layout">
+  <div class="watch-main">
+
+    <!-- ===== المشغل الخاص ===== -->
+    <div class="sido-player-wrap" id="sido-player">
+
+      <!-- iframe السيرفر — مخفي خلف الطبقات -->
+      <iframe class="sido-iframe" id="sido-iframe" src="" allowfullscreen
+        allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+        referrerpolicy="unsafe-url" scrolling="no" frameborder="0">
+      </iframe>
+
+      <!-- طبقة تمنع ظهور واجهة السيرفر -->
+      <div class="sido-blocker" id="sido-blocker"></div>
+
+      <!-- شاشة التحميل -->
+      <div class="sido-loading" id="sido-loading">
+        <div class="sido-spinner"></div>
+        <p>جاري تحميل الفيديو...</p>
+      </div>
+
+      <!-- زر Play -->
+      <div class="sido-play-btn hide" id="sido-play-btn" onclick="playerPlay()">
+        <div class="sido-play-circle"><i class="fas fa-play"></i></div>
+      </div>
+
+      <!-- شريط التحكم -->
+      <div class="sido-controls" id="sido-controls">
+
+        <!-- شريط التقدم -->
+        <div class="sido-prog-wrap" id="sido-prog-wrap">
+          <div class="sido-prog" id="sido-prog">
+            <div class="sido-prog-fill"  id="sido-prog-fill"></div>
+            <div class="sido-prog-thumb" id="sido-prog-thumb"></div>
+          </div>
+        </div>
+
+        <div class="sido-btns">
+          <div class="sido-left">
+            <!-- play/pause -->
+            <button class="sc-btn" id="sc-play" onclick="playerPlay()" title="تشغيل/إيقاف">
+              <i class="fas fa-play" id="sc-play-icon"></i>
+            </button>
+            <!-- تخطي -->
+            <button class="sc-btn" onclick="playerSkip(-10)" title="-10 ثانية">
+              <i class="fas fa-undo" style="font-size:12px"></i>
+            </button>
+            <button class="sc-btn" onclick="playerSkip(10)" title="+10 ثانية">
+              <i class="fas fa-redo" style="font-size:12px"></i>
+            </button>
+            <!-- صوت -->
+            <div class="sc-vol-wrap">
+              <button class="sc-btn" id="sc-vol-btn" onclick="playerToggleMute()" title="الصوت">
+                <i class="fas fa-volume-up" id="sc-vol-icon"></i>
+              </button>
+              <input type="range" class="sc-vol-slider" id="sc-vol-slider" min="0" max="100" value="100" step="1">
+            </div>
+            <!-- وقت -->
+            <span class="sc-time"><span id="sc-cur">0:00</span> / <span id="sc-dur">0:00</span></span>
+          </div>
+
+          <div class="sido-right">
+            <!-- سرعة -->
+            <div class="sc-speed-wrap">
+              <span class="sc-speed-label" id="sc-speed-label" onclick="toggleSpeedMenu()">1x</span>
+              <div class="sc-speed-menu" id="sc-speed-menu">
+                <div data-s="0.5">0.5x</div>
+                <div data-s="0.75">0.75x</div>
+                <div data-s="1" class="ac">عادي</div>
+                <div data-s="1.25">1.25x</div>
+                <div data-s="1.5">1.5x</div>
+                <div data-s="2">2x</div>
+              </div>
+            </div>
+            <!-- ملء شاشة -->
+            <button class="sc-btn" onclick="playerFullscreen()" title="ملء الشاشة">
+              <i class="fas fa-expand" id="sc-fs-icon"></i>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- تنقل -->
+    <div class="watch-controls">
+      <button class="ctrl-btn" id="prev-ep"><i class="fas fa-step-backward"></i> السابقة</button>
+      <button class="ctrl-btn active" id="next-ep">التالية <i class="fas fa-step-forward"></i></button>
+      <button class="ctrl-btn" id="dl-btn"><i class="fas fa-download"></i> تحميل</button>
+    </div>
+
+    <!-- معلومات الأنمي -->
+    <div class="watch-anime-info">
+      <img id="anime-poster" src="" alt="">
+      <div>
+        <h3 id="info-name"></h3>
+        <p id="info-desc"></p>
+        <div id="info-meta" class="info-meta"></div>
+        <button class="wl-mini-btn" id="wl-btn"><i class="fas fa-bookmark"></i> أضف للقائمة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- قائمة الحلقات -->
+  <aside class="watch-sidebar">
+    <div class="sidebar-head"><i class="fas fa-list"></i> قائمة الحلقات</div>
+    <div id="ep-list" class="ep-list"></div>
+  </aside>
+</div>
+
+<script type="module">
+import { supabase } from "../backend/supabase.js";
+import { getEpisode, getEpisodes, getAnimeById, getServers } from "../backend/anime_api.js";
+import { addPoints, getTotalPoints } from "../js/points.js";
+import { addToWatchlist } from "../backend/user_api.js";
+import "../js/navbar.js";
+
+function san(s){const d=document.createElement("div");d.textContent=String(s||"");return d.innerHTML;}
+
+// ===== تحويل رابط لـ embed =====
+function toEmbed(url){
+  if(!url) return "";
+  url = url.trim();
+  if(/playmogo\.com/i.test(url)) return url.replace(/\/(d|f|v)\//,"/e/");
+  if(/dood/i.test(url))           return url.replace(/\/(d|f|v)\//,"/e/");
+  if(/streamtape\.com/i.test(url)) return url.replace("/v/","/e/");
+  if(/streamwish\.com|filelions\.com/i.test(url)) return url.replace("/v/","/e/");
+  return url;
+}
+
+// ===== حالة المشغل =====
+let isPlaying = false;
+let isMuted   = false;
+let lastVol   = 100;
+let duration  = 0;
+let currentTime = 0;
+let speed     = 1;
+let pointsDone = false;
+let pointsTimer = null;
+let progInterval = null;
+
+// ===== تحميل فيديو جديد =====
+function loadVideo(url){
+  const embed = toEmbed(url);
+  const iframe  = document.getElementById("sido-iframe");
+  const loading = document.getElementById("sido-loading");
+  const playBtn = document.getElementById("sido-play-btn");
+
+  // إعادة تعيين الحالة
+  isPlaying = false;
+  currentTime = 0;
+  duration = 0;
+  clearInterval(progInterval);
+  clearTimeout(pointsTimer);
+  updateProgress(0);
+  updateTimeDisplay(0,0);
+  document.getElementById("sc-play-icon").className = "fas fa-play";
+
+  // إظهار شاشة التحميل
+  loading.classList.remove("hide");
+  playBtn.classList.add("hide");
+  iframe.style.pointerEvents = "none";
+
+  // تحميل الـ iframe
+  iframe.src = embed;
+
+  // بعد ثانيتين — نفترض أن الفيديو حمّل وجاهز
+  setTimeout(()=>{
+    loading.classList.add("hide");
+    playBtn.classList.remove("hide");
+  }, 2000);
+}
+
+// ===== تشغيل / إيقاف =====
+// نستخدم postMessage مع السيرفرات اللي تدعمه
+// وإذا ما دعمتش — نفعّل pointer-events ونترك المستخدم يضغط
+
+window.playerPlay = function(){
+  const iframe  = document.getElementById("sido-iframe");
+  const playBtn = document.getElementById("sido-play-btn");
+  const playIcon= document.getElementById("sc-play-icon");
+
+  if(!isPlaying){
+    // تفعيل التفاعل مع iframe مؤقتاً
+    iframe.style.pointerEvents = "all";
+    playBtn.classList.add("hide");
+    isPlaying = true;
+    playIcon.className = "fas fa-pause";
+
+    // محاولة إرسال play عبر postMessage
+    try { iframe.contentWindow.postMessage({action:"play"},"*"); } catch(_){}
+
+    // بدء عداد الوقت التقريبي
+    startProgressTimer();
+
+    // إخفاء blocker لثانية واحدة فقط لتشغيل الفيديو
+    document.getElementById("sido-blocker").style.display = "none";
+    setTimeout(()=>{
+      document.getElementById("sido-blocker").style.display = "block";
+      iframe.style.pointerEvents = "none";
+    }, 800);
+
+  } else {
+    isPlaying = false;
+    playIcon.className = "fas fa-play";
+    playBtn.classList.remove("hide");
+    clearInterval(progInterval);
+    try { iframe.contentWindow.postMessage({action:"pause"},"*"); } catch(_){}
+  }
+};
+
+// ===== عداد التقدم (تقريبي) =====
+function startProgressTimer(){
+  clearInterval(progInterval);
+  // نفترض مدة الحلقة 24 دقيقة إذا ما عرفناها
+  const estDuration = duration || 1440;
+  progInterval = setInterval(()=>{
+    if(!isPlaying) return;
+    currentTime++;
+    updateProgress(currentTime / estDuration * 100);
+    updateTimeDisplay(currentTime, estDuration);
+    // نقاط بعد 3 دقائق
+    if(!pointsDone && currentTime >= 180) givePoints();
+  }, 1000);
+}
+
+function updateProgress(pct){
+  pct = Math.min(100, Math.max(0, pct));
+  document.getElementById("sido-prog-fill").style.width  = pct+"%";
+  document.getElementById("sido-prog-thumb").style.left  = pct+"%";
+}
+
+function updateTimeDisplay(cur, dur){
+  document.getElementById("sc-cur").textContent = fmt(cur);
+  document.getElementById("sc-dur").textContent = fmt(dur);
+}
+
+function fmt(s){
+  s=Math.floor(s||0);
+  const m=Math.floor(s/60),ss=s%60;
+  return m+":"+String(ss).padStart(2,"0");
+}
+
+// ===== تخطي =====
+window.playerSkip = function(sec){
+  currentTime = Math.max(0, currentTime + sec);
+  const estDur = duration || 1440;
+  updateProgress(currentTime/estDur*100);
+  updateTimeDisplay(currentTime, estDur);
+  // محاولة seek عبر postMessage
+  try{ document.getElementById("sido-iframe").contentWindow.postMessage({action:"seek",time:currentTime},"*"); }catch(_){}
+};
+
+// ===== شريط التقدم بالضغط =====
+document.getElementById("sido-prog-wrap").addEventListener("click",(e)=>{
+  const rect = document.getElementById("sido-prog").getBoundingClientRect();
+  const pct  = Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
+  const estDur = duration||1440;
+  currentTime = Math.floor(pct*estDur);
+  updateProgress(pct*100);
+  updateTimeDisplay(currentTime,estDur);
+  try{ document.getElementById("sido-iframe").contentWindow.postMessage({action:"seek",time:currentTime},"*"); }catch(_){}
+});
+
+// ===== صوت =====
+window.playerToggleMute = function(){
+  isMuted = !isMuted;
+  const icon=document.getElementById("sc-vol-icon");
+  icon.className = isMuted ? "fas fa-volume-mute" : lastVol<50 ? "fas fa-volume-down" : "fas fa-volume-up";
+  document.getElementById("sc-vol-slider").value = isMuted ? 0 : lastVol;
+  try{ document.getElementById("sido-iframe").contentWindow.postMessage({action:isMuted?"mute":"unmute"},"*"); }catch(_){}
+};
+
+document.getElementById("sc-vol-slider").addEventListener("input",(e)=>{
+  lastVol = e.target.value;
+  isMuted = lastVol==0;
+  const icon=document.getElementById("sc-vol-icon");
+  icon.className = isMuted ? "fas fa-volume-mute" : lastVol<50 ? "fas fa-volume-down" : "fas fa-volume-up";
+  try{ document.getElementById("sido-iframe").contentWindow.postMessage({action:"volume",value:lastVol/100},"*"); }catch(_){}
+});
+
+// ===== سرعة =====
+window.toggleSpeedMenu = function(){
+  document.getElementById("sc-speed-menu").classList.toggle("open");
+};
+document.querySelectorAll("#sc-speed-menu [data-s]").forEach(el=>{
+  el.addEventListener("click",()=>{
+    speed = parseFloat(el.dataset.s);
+    document.getElementById("sc-speed-label").textContent = speed===1?"1x":speed+"x";
+    document.querySelectorAll("#sc-speed-menu [data-s]").forEach(x=>x.classList.remove("ac"));
+    el.classList.add("ac");
+    document.getElementById("sc-speed-menu").classList.remove("open");
+    try{ document.getElementById("sido-iframe").contentWindow.postMessage({action:"speed",value:speed},"*"); }catch(_){}
+  });
+});
+document.addEventListener("click",(e)=>{
+  if(!document.getElementById("sc-speed-label")?.contains(e.target))
+    document.getElementById("sc-speed-menu")?.classList.remove("open");
+});
+
+// ===== ملء الشاشة =====
+window.playerFullscreen = function(){
+  const el = document.getElementById("sido-player");
+  const icon = document.getElementById("sc-fs-icon");
+  if(!document.fullscreenElement){
+    el.requestFullscreen?.() || el.webkitRequestFullscreen?.();
+    icon.className="fas fa-compress";
+  } else {
+    document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+    icon.className="fas fa-expand";
+  }
+};
+
+// ===== اختصارات =====
+document.addEventListener("keydown",(e)=>{
+  if(["INPUT","TEXTAREA"].includes(e.target.tagName)) return;
+  if(e.key===" "||e.key==="k"){ e.preventDefault(); playerPlay(); }
+  if(e.key==="ArrowRight"){ e.preventDefault(); playerSkip(5); }
+  if(e.key==="ArrowLeft") { e.preventDefault(); playerSkip(-5); }
+  if(e.key==="m") playerToggleMute();
+  if(e.key==="f") playerFullscreen();
+});
+
+// ===== نقاط =====
+async function givePoints(){
+  if(pointsDone) return; pointsDone=true;
+  const{data}=await supabase.auth.getUser();
+  if(!data?.user) return;
+  await addPoints(data.user.id,10,"watch");
+  const total=await getTotalPoints(data.user.id);
+  document.getElementById("pts-badge").style.display="flex";
+  document.getElementById("watch-pts").textContent=total;
+  document.querySelectorAll("#snav-pts,#rm-pts").forEach(el=>el.textContent=total);
+}
+
+// ===== تهيئة =====
+const epId = new URLSearchParams(location.search).get("ep");
+let episodes=[], current=null;
+
+async function init(){
+  if(!epId) return;
+  current = await getEpisode(epId);
+  if(!current){ document.getElementById("ep-label").textContent="لا توجد"; return; }
+
+  document.title = "Sido — الحلقة "+current.number+" — "+(current.anime_name||"");
+  document.getElementById("anime-title").textContent = current.anime_name||"";
+  document.getElementById("ep-label").textContent    = "الحلقة "+(current.number||"");
+  document.getElementById("back-link").href          = "anime.html?id="+current.anime_id;
+
+  const servers = await getServers(Number(epId));
+
+  if(servers.length>0){
+    buildServerUI(servers);
+    const def = servers.find(s=>s.is_default)||servers[0];
+    loadVideo(def.video_url);
+    buildQuality(servers, def.server_name);
+  } else if(current.video_url){
+    document.getElementById("server-btns").innerHTML =
+      "<button class=\"server-btn active\"><i class=\"fas fa-server\"></i> السيرفر الافتراضي <span class=\"qtag\">"+(current.quality||"HD")+"</span></button>";
+    loadVideo(current.video_url);
+  } else {
+    document.getElementById("server-btns").innerHTML="<span style=\"color:#e53e3e\">⚠️ لا يوجد رابط</span>";
+  }
+
+  const[eps,anime]=await Promise.all([getEpisodes(current.anime_id),getAnimeById(current.anime_id)]);
+  episodes=eps;
+
+  document.getElementById("ep-list").innerHTML=eps.map(ep=>
+    "<div class=\"ep-row "+(ep.id==epId?"ep-active":"")+"\" onclick=\"location.href='episode.html?ep="+Number(ep.id)+"'\">"+
+    "<span class=\"ep-row-num\">الحلقة "+san(ep.number)+"</span>"+
+    (ep.title?"<span class=\"ep-row-title\">"+san(ep.title)+"</span>":"")+
+    "</div>"
+  ).join("");
+  document.querySelector(".ep-active")?.scrollIntoView({block:"center"});
+
+  if(anime){
+    document.getElementById("anime-poster").src=anime.image||"";
+    document.getElementById("info-name").textContent=anime.name||"";
+    document.getElementById("info-desc").textContent=anime.description||"";
+    document.getElementById("info-meta").innerHTML=[
+      anime.genre?"<span>"+san(anime.genre)+"</span>":"",
+      anime.year?"<span>📅 "+san(anime.year)+"</span>":"",
+      anime.rating?"<span>⭐ "+san(anime.rating)+"</span>":"",
+    ].filter(Boolean).join("");
+  }
+
+  const idx=eps.findIndex(e=>e.id==epId);
+  document.getElementById("prev-ep").onclick=()=>{ if(eps[idx-1])location.href="episode.html?ep="+eps[idx-1].id; else alert("هذه أول حلقة!"); };
+  document.getElementById("next-ep").onclick=()=>{ if(eps[idx+1])location.href="episode.html?ep="+eps[idx+1].id; else alert("هذه آخر حلقة!"); };
+  document.getElementById("dl-btn").onclick=()=>{ const u=current.video_url; if(u)window.open(u.replace(/\/e\//,"/d/"),"_blank"); };
+  document.getElementById("wl-btn").onclick=async()=>{
+    const{data}=await supabase.auth.getUser();
+    if(!data?.user){location.href="login.html";return;}
+    await addToWatchlist(data.user.id,current.anime_id);
+    const btn=document.getElementById("wl-btn");
+    btn.innerHTML="<i class=\"fas fa-check\"></i> أُضيف";
+    btn.style.color="#6ee7b7";
+  };
+}
+
+function groupBy(arr){const g={};arr.forEach(s=>{if(!g[s.server_name])g[s.server_name]=[];g[s.server_name].push(s);});return g;}
+
+function buildQuality(servers,name){
+  const g=groupBy(servers);const q=g[name]||[];
+  const w=document.getElementById("qwrap");const s=document.getElementById("qsel");
+  if(q.length>1){
+    w.style.display="flex";
+    s.innerHTML=q.map(x=>"<option value=\""+x.video_url+"\" "+(x.is_default?"selected":"")+">"+san(x.quality)+"</option>").join("");
+    s.onchange=()=>{ pointsDone=false; loadVideo(s.value); };
+  } else w.style.display="none";
+}
+
+function buildServerUI(servers){
+  const g=groupBy(servers);const names=Object.keys(g);
+  document.getElementById("server-btns").innerHTML=names.map((n,i)=>{
+    const b=g[n].find(q=>q.is_default)||g[n][0];
+    return "<button class=\"server-btn "+(i===0?"active":"")+"\" onclick=\"switchServer('"+n+"')\"><i class=\"fas fa-server\"></i> "+san(n)+" <span class=\"qtag\">"+san(b.quality)+"</span></button>";
+  }).join("");
+  window.switchServer=function(name){
+    document.querySelectorAll(".server-btn").forEach(b=>b.classList.toggle("active",b.textContent.trim().includes(name)));
+    const q=g[name]||[];const d=q.find(x=>x.is_default)||q[0];
+    pointsDone=false; loadVideo(d.video_url); buildQuality(servers,name);
+  };
+}
+
+init();
+</script>
+</body>
+</html>

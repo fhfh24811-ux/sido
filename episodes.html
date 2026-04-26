@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sido — الحلقات</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/navbar.css">
+<style>
+body{background:#08061a;color:#f0eeff;margin:0;font-family:'Tajawal',sans-serif}
+.ep-page{padding:28px 4% 60px}
+.ep-header{display:flex;align-items:center;gap:14px;margin-bottom:24px;flex-wrap:wrap}
+.ep-header h1{font-size:22px;font-weight:800;color:#ffcc00}
+.ep-header a{color:#887aaa;text-decoration:none;font-size:14px;display:flex;align-items:center;gap:6px;transition:.18s}
+.ep-header a:hover{color:#ffcc00}
+.ep-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.ep-card{background:#1a1535;border:1px solid rgba(124,58,237,.22);border-radius:10px;padding:13px 14px;cursor:pointer;transition:.2s;display:flex;flex-direction:column;gap:3px}
+.ep-card:hover{border-color:#ffcc00;background:rgba(255,204,0,.06);transform:translateY(-2px)}
+.ep-num{font-size:13px;font-weight:700}
+.ep-ttl{font-size:11px;color:#887aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.loading{text-align:center;padding:60px;color:#887aaa}
+</style>
+</head>
+<body>
+<div class="ep-page">
+  <div class="ep-header">
+    <a href="#" id="back-link"><i class="fas fa-arrow-right"></i> رجوع للأنمي</a>
+    <h1 id="ep-page-title">الحلقات</h1>
+  </div>
+  <div class="ep-grid" id="epGrid">
+    <div class="loading"><i class="fas fa-spinner fa-spin fa-2x"></i><br>جاري التحميل...</div>
+  </div>
+</div>
+<script type="module">
+import { supabase } from "../backend/supabase.js";
+import { getEpisodes, getAnimeById } from "../backend/anime_api.js";
+import "../js/navbar.js";
+const animeId = new URLSearchParams(location.search).get("id");
+async function load() {
+  if (!animeId) return;
+  const [eps, anime] = await Promise.all([getEpisodes(animeId), getAnimeById(animeId)]);
+  const backLink = document.getElementById("back-link");
+  backLink.href = `anime.html?id=${animeId}`;
+  if (anime) document.getElementById("ep-page-title").textContent = anime.title || "الحلقات";
+  const grid = document.getElementById("epGrid");
+  grid.innerHTML = eps.length
+    ? eps.map(ep => `
+        <div class="ep-card" onclick="location.href='episode.html?ep=${Number(ep.id)}'">
+          <div class="ep-num">الحلقة ${ep.episode_number}</div>
+          ${ep.title ? `<div class="ep-ttl">${ep.title}</div>` : ''}
+        </div>`).join("")
+    : `<div class="loading">لا توجد حلقات بعد</div>`;
+}
+load();
+</script>
+</body></html>
